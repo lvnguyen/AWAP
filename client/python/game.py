@@ -100,10 +100,9 @@ class Game:
     def find_move(self):
         max_point = 0
         best_move = (0, 0, 0, 0)
-        gs = GameState(self.grid, self.my_number)
-        ab = AlphaBeta()
-        return ab.search(gs, depth=4, self.my_number, heuristic)[1]
-        """
+        # gs = GameState(self.grid, self.my_number)
+        # ab = AlphaBeta()
+        # return ab.search(gs, depth=4, self.my_number, heuristic)[1]
         N = self.dimension
         for index, block in enumerate(self.blocks):
             for i in range(0, N * N):
@@ -123,7 +122,6 @@ class Game:
                             best_move = (index, rotations, x, y)
                        
         return best_move
-        """
 
     # Check if we can claim any bonus square
     def is_bonus(self, block, point):
