@@ -52,8 +52,51 @@ class Game:
     # find_move will be called and you must return where to go.
     # You must return a tuple (block index, # rotations, x, y)
 
-    def find_move(self):
+    def simple_evaluation(self, player):
+        return 0
+
+    def get_possible_moves(self, player):
+        return []
+
+    def get_next_player(self, player):
+        return (1 + player) % 4
+
+    def get_score(self, player, heuristic):
+        ans = []
+        s_player = player
+        while True:
+            ans.append(heuristic(player))
+            s_player = self.get_next_player(s_player)
+            if s_player == player:
+                break
+        return ans
+
+    def apply_next_move(self, move):
         pass
+
+    def search(self, state, depth, player, heuristic):
+        # Find the best move with respect to this player
+        # Return score + move
+        if depth == 0: # We run out of depth
+            return [state.get_score(player, heuristic), (0, 0, 0, 0)]
+
+        best_score = 0
+        best_move = (0, 0, 0, 0) # We accept null move
+        all_moves = state.get_possible_moves(player)
+        for move in all_moves:
+            next_state = state.apply_next_move(move)
+            # This returns the unrefined score, we need to refine for our own good
+            next_eval = self.search(next_state, depth - 1, self.next_player(player), heuristic)[0]
+            next_score = next_eval[-1]
+            next_score.append(next_eval[:len(next_eval - 1)])
+
+            if best_score < next_score:
+                best_score = next_score
+                best_move = move
+        return [best_score, best_move]
+
+    def find_move(self):
+        return self.search(self, depth=4, player=self.my_number, heuristic=self.simple_evaluation)[1]
 
     # Check if we can claim any bonus square
     def is_bonus(self, block, point):
