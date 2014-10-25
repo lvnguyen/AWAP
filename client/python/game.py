@@ -37,6 +37,51 @@ class Point:
     def distance(self, point):
         return abs(point.x - self.x) + abs(point.y - self.y)
 
+class GameState:
+    # To be filled: current state, next move, etc.
+    def __init__(self):
+        pass
+
+class AlphaBeta:
+    def __init(self):
+        pass
+
+    def next_player(self, player):
+        if player == 4:
+            return 1
+        return 1 + player
+
+    def get_score(self, state, player, heuristic):
+        ans = []
+        s_player = player
+        while True:
+            ans.append(state.eval(heuristic, s_player))
+            s_player = self.next_player(s_player)
+            if player == s_player:
+                break
+        return ans
+
+    def search(self, state, depth, player, heuristic):
+        # Find the best move with respect to this player
+        # Return score + move
+        if depth == 0: # We run out of depth
+            return [self.get_score(state, player, heuristic), (0, 0, 0, 0)]
+
+        best_score = 0
+        best_move = (0, 0, 0, 0) # We accept null move
+        all_moves = state.get_possible_moves(player)
+        for move in all_moves:
+            next_state = state.apply_next_move(move)
+            # This returns the unrefined score, we need to refine for our own good
+            next_eval = self.search(next_state, depth - 1, self.next_player(player), heuristic)[0]
+            next_score = next_eval[-1]
+            next_score.append(next_eval[:len(next_eval - 1)])
+
+            if best_score < next_score:
+                best_score = next_score
+                best_move = move
+        return [best_score, best_move]
+
 class Game:
     blocks = []
     grid = []
@@ -51,8 +96,14 @@ class Game:
     # find_move is your place to start. When it's your turn,
     # find_move will be called and you must return where to go.
     # You must return a tuple (block index, # rotations, x, y)
+
     def find_move(self):
-        moves = []
+        max_point = 0
+        best_move = (0, 0, 0, 0)
+        gs = GameState(self.grid, self.my_number)
+        ab = AlphaBeta()
+        return ab.search(gs, depth=4, self.my_number, heuristic)[1]
+        """
         N = self.dimension
         for index, block in enumerate(self.blocks):
             for i in range(0, N * N):
@@ -62,9 +113,26 @@ class Game:
                 for rotations in range(0, 4):
                     new_block = self.rotate_block(block, rotations)
                     if self.can_place(new_block, Point(x, y)):
-                        return (index, rotations, x, y)
+                        pts = len(block)
+                        mult = self.is_bonus(new_block, Point(x, y))
+                        if mult == True:
+                            pts *= 3
 
-        return (0, 0, 0, 0)
+                        if max_point < pts:
+                            max_point = pts
+                            best_move = (index, rotations, x, y)
+                       
+        return best_move
+        """
+
+    # Check if we can claim any bonus square
+    def is_bonus(self, block, point):
+        for offset in block:
+            p = point + offset
+            for q in self.bonus_squares:
+                if p.x == q[0] and p.y == q[1]:
+                    return True
+        return False
 
     # Checks if a block can be placed at the given point
     def can_place(self, block, point):
